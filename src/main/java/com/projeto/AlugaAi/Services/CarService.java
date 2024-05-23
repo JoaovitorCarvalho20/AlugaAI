@@ -1,21 +1,27 @@
-package com.projeto.AlugaAi.Services; // Define o pacote onde esta classe está localizada
+package com.projeto.AlugaAi.Services;
 
-import com.projeto.AlugaAi.Models.Car; // Importa a classe Car do pacote Models
-import com.projeto.AlugaAi.Repository.CarRepository; // Importa a interface CarRepository do pacote Repository
-import org.springframework.beans.factory.annotation.Autowired; // Importa a anotação Autowired para injeção de dependência
-import org.springframework.stereotype.Service; // Importa a anotação Service para marcar esta classe como um serviço
+import com.projeto.AlugaAi.Models.Car;
+import com.projeto.AlugaAi.Repository.CarRepository;
+import com.projeto.AlugaAi.Util.FileStorageService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List; // Importa a classe List para manipular listas
-import java.util.Optional; // Importa a classe Optional para manipular valores que podem estar ausentes
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
-@Service // Marca a classe como um serviço do Spring
+@Service
 public class CarService {
 
     private final CarRepository carRepository; // Declara uma instância de CarRepository
+    private final FileStorageService fileStorageService; // Declara uma instância de FileStorageService
 
-    @Autowired // Injeta a dependência do CarRepository automaticamente
-    public CarService(CarRepository carRepository) {
+    @Autowired // Injeta as dependências através do construtor
+    public CarService(CarRepository carRepository, FileStorageService fileStorageService) {
         this.carRepository = carRepository; // Inicializa a instância de CarRepository através do construtor
+        this.fileStorageService = fileStorageService; // Inicializa a instância de FileStorageService através do construtor
     }
 
     // Obtém todos os carros
@@ -60,5 +66,16 @@ public class CarService {
                     updatedCar.setId(id);
                     return carRepository.save(updatedCar); // Salva o novo Car no repositório
                 });
+    }
+
+    // Método para salvar um carro com arquivos de imagem
+    public Car saveCar(Car car, MultipartFile[] files) {
+        Set<String> imagens = new HashSet<>();
+        for (MultipartFile file : files) {
+            String filename = fileStorageService.store(file);
+            imagens.add(filename);
+        }
+        car.setImagens(imagens);
+        return carRepository.save(car); // Usa a instância injetada carRepository para salvar
     }
 }
