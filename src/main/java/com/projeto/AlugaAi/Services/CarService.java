@@ -1,6 +1,9 @@
 package com.projeto.AlugaAi.Services;
 
+import com.projeto.AlugaAi.Exeptions.NoImagesProvidedException;
 import com.projeto.AlugaAi.Models.Car;
+import com.projeto.AlugaAi.Models.CarModel;
+import com.projeto.AlugaAi.Repository.CarModelRepository;
 import com.projeto.AlugaAi.Repository.CarRepository;
 import com.projeto.AlugaAi.Util.FileStorageService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,42 +15,99 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-@Service
+@Service  // Indica que esta classe é um serviço gerenciado pelo Spring
 public class CarService {
 
-    private final CarRepository carRepository; // Declara uma instância de CarRepository
-    private final FileStorageService fileStorageService; // Declara uma instância de FileStorageService
+    private final CarRepository carRepository;  // Repositório para operações com Carros
+    private final FileStorageService fileStorageService;  // Serviço para armazenamento de arquivos
+    private final CarModelRepository carModelRepository;  // Repositório para operações com CarModels
 
-    @Autowired // Injeta as dependências através do construtor
-    public CarService(CarRepository carRepository, FileStorageService fileStorageService) {
-        this.carRepository = carRepository; // Inicializa a instância de CarRepository através do construtor
-        this.fileStorageService = fileStorageService; // Inicializa a instância de FileStorageService através do construtor
+    @Autowired  // Injeção de dependências através do construtor
+    public CarService(CarRepository carRepository, FileStorageService fileStorageService, CarModelRepository carModelRepository) {
+        this.carRepository = carRepository;
+        this.fileStorageService = fileStorageService;
+        this.carModelRepository = carModelRepository;
     }
 
-    // Obtém todos os carros
-    public List<Car> findAllCars() {
-        return carRepository.findAll(); // Retorna uma lista de todos os Car no repositório
+    // Método para salvar um carro com imagens
+    public Car saveCar(Car car, MultipartFile[] files) {
+        // Verifica se foram fornecidos arquivos de imagens
+        if (files == null || files.length == 0) {
+            throw new NoImagesProvidedException("Pelo menos uma imagem deve ser fornecida.");
+        }
+
+        Set<String> imagens = new HashSet<>();
+        for (MultipartFile file : files) {
+            String filename = fileStorageService.store(file);  // Armazena o arquivo de imagem
+            imagens.add(filename);  // Adiciona o nome do arquivo ao conjunto de imagens do carro
+        }
+        car.setImagens(imagens); // Define as imagens no objeto Car
+
+        // Verifica se o CarModel já está definido
+        if (car.getCarModel() == null || car.getCarModel().getId() == null) {
+            throw new IllegalArgumentException("CarModel ID must be provided.");
+        }
+
+        // Busca o CarModel no banco de dados
+        CarModel carModel = carModelRepository.findById(car.getCarModel().getId())
+                .orElseThrow(() -> new IllegalArgumentException("CarModel not found with id: " + car.getCarModel().getId()));
+
+        car.setCarModel(carModel); // Define o CarModel associado ao Car
+
+        return carRepository.save(car); // Salva o carro com as imagens no repositório
     }
 
-    // Obtém um carro por id
+    // Método para buscar todos os carros com suas imagens
+    public List<Car> findAllCarsWithImages() {
+        List<Car> cars = carRepository.findAll();  // Busca todos os carros no banco de dados
+        for (Car car : cars) {
+            // Aqui você pode carregar as imagens do carro se necessário
+            // Normalmente, carregar as imagens seria feito sob demanda para otimizar o desempenho
+             car.setImagens(car.getImagens()); // Carregar imagens, se necessário
+        }
+        return cars;  // Retorna a lista de carros com imagens (ou sem)
+    }
+
+    // Método para buscar um carro pelo ID
     public Optional<Car> findCarById(Long id) {
-        return carRepository.findById(id); // Retorna um Optional contendo o Car, se encontrado, ou vazio, se não encontrado
+        return carRepository.findById(id);  // Busca um carro pelo ID no banco de dados
     }
 
-    // Salva um novo carro
+    // Método para buscar todos os carros
+    public List<Car> findAllCars() {
+        List<Car> cars = carRepository.findAll();  // Busca todos os carros no banco de dados
+        for (Car car : cars) {
+            if (car.getImagens() == null) {
+                car.setImagens(new HashSet<>()); // Inicializa imagens como um conjunto vazio se for nulo
+            } else {
+                // Filtra as imagens para manter apenas as que existem no armazenamento de arquivos
+                Set<String> filteredImages = new HashSet<>();
+                for (String imagem : car.getImagens()) {
+                    if (fileStorageService.exists(imagem)) {
+                        filteredImages.add(imagem);
+                    }
+                }
+                car.setImagens(filteredImages);
+            }
+        }
+        return cars;  // Retorna a lista de carros com imagens filtradas
+    }
+
+    // Método para salvar um carro sem imagens
     public Car saveCar(Car car) {
-        return carRepository.save(car); // Salva o Car no repositório e retorna a entidade salva
+        return carRepository.save(car);  // Salva um carro sem imagens no banco de dados
     }
 
-    // Deleta um carro por id
+    // Método para deletar um carro pelo ID
     public void deleteCar(Long id) {
-        carRepository.deleteById(id); // Deleta o Car pelo ID no repositório
+        carRepository.deleteById(id);  // Exclui um carro do banco de dados pelo ID
     }
 
-    // Atualiza um carro existente ou cria um novo se não existir
+    // Método para atualizar um carro pelo ID
     public Car updateCar(Long id, Car updatedCar) {
-        return carRepository.findById(id) // Tenta encontrar o Car pelo ID
-                .map(car -> { // Se encontrado, atualiza os campos necessários
+        return carRepository.findById(id)  // Busca um carro pelo ID no banco de dados
+                .map(car -> {
+                    // Atualiza os campos do carro com os valores do carro atualizado
                     car.setYear(updatedCar.getYear());
                     car.setColor(updatedCar.getColor());
                     car.setPlate(updatedCar.getPlate());
@@ -60,22 +120,11 @@ public class CarService {
                     car.setNumberOfPorts(updatedCar.getNumberOfPorts());
                     car.setAvailable(updatedCar.getAvailable());
                     car.setCarModel(updatedCar.getCarModel());
-                    return carRepository.save(car); // Salva o Car atualizado no repositório
+                    return carRepository.save(car);  // Salva o carro atualizado no banco de dados
                 })
-                .orElseGet(() -> { // Se não encontrado, cria um novo Car com o ID fornecido
-                    updatedCar.setId(id);
-                    return carRepository.save(updatedCar); // Salva o novo Car no repositório
+                .orElseGet(() -> {
+                    updatedCar.setId(id);  // Define o ID do carro atualizado
+                    return carRepository.save(updatedCar);  // Salva o carro atualizado no banco de dados
                 });
-    }
-
-    // Método para salvar um carro com arquivos de imagem
-    public Car saveCar(Car car, MultipartFile[] files) {
-        Set<String> imagens = new HashSet<>();
-        for (MultipartFile file : files) {
-            String filename = fileStorageService.store(file);
-            imagens.add(filename);
-        }
-        car.setImagens(imagens);
-        return carRepository.save(car); // Usa a instância injetada carRepository para salvar
     }
 }

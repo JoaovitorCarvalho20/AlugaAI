@@ -1,5 +1,6 @@
 package com.projeto.AlugaAi.Util;
 
+import com.projeto.AlugaAi.Exeptions.NoImagesProvidedException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -26,7 +27,7 @@ public class FileStorageService {
     public String store(MultipartFile file) {
         try {
             if (file.isEmpty()) {
-                throw new RuntimeException("Falha ao armazenar arquivo vazio.");
+                throw new NoImagesProvidedException("Pelo menos uma imagem deve ser fornecida.");
             }
             String filename = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
             Files.copy(file.getInputStream(), this.rootLocation.resolve(filename));
@@ -36,5 +37,8 @@ public class FileStorageService {
         }
     }
 
-
+    public boolean exists(String imagem) {
+        Path imagePath = this.rootLocation.resolve(imagem);
+        return Files.exists(imagePath);
+    }
 }
