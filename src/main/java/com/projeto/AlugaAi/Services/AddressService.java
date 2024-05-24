@@ -8,18 +8,18 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
-@Service  // Anotação do Spring para marcar esta classe como um serviço
+@Service
 public class AddressService {
 
-    @Autowired  // Injeta uma instância do AddressRepository
+    @Autowired
     private AddressRepository addressRepository;
 
-    // Método para listar todos os endereços
+    // Método para buscar todos os endereços
     public List<AddressModel> getAllAddresses() {
         return addressRepository.findAll();
     }
 
-    // Método para buscar um endereço por ID
+    // Método para buscar um endereço pelo ID
     public Optional<AddressModel> getAddressById(Long id) {
         return addressRepository.findById(id);
     }
@@ -29,9 +29,11 @@ public class AddressService {
         return addressRepository.save(address);
     }
 
-    // Método para atualizar um endereço existente
+    // Método para atualizar um endereço
     public Optional<AddressModel> updateAddress(Long id, AddressModel updatedAddress) {
+        // Utiliza findById para obter o endereço pelo ID
         return addressRepository.findById(id).map(address -> {
+            // Atualiza os dados do endereço com base no endereço atualizado
             address.setStreet(updatedAddress.getStreet());
             address.setNumber(updatedAddress.getNumber());
             address.setComplement(updatedAddress.getComplement());
@@ -39,17 +41,17 @@ public class AddressService {
             address.setState(updatedAddress.getState());
             address.setCep(updatedAddress.getCep());
             address.setClient(updatedAddress.getClient());
-            return addressRepository.save(address);
+            return addressRepository.save(address); // Salva o endereço atualizado
         });
     }
 
-    // Método para deletar um endereço por ID
+    // Método para deletar um endereço pelo ID
     public boolean deleteAddress(Long id) {
         if (addressRepository.existsById(id)) {
             addressRepository.deleteById(id);
-            return true;
+            return true; // Retorna verdadeiro se o endereço foi deletado com sucesso
         } else {
-            return false;
+            return false; // Retorna falso se o endereço não foi encontrado
         }
     }
 }

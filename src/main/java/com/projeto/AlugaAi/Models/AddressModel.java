@@ -1,40 +1,42 @@
 package com.projeto.AlugaAi.Models;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data  // Anotação do Lombok para gerar getters, setters, equals, hashCode e métodos toString
-@NoArgsConstructor  // Anotação do Lombok para gerar um construtor sem argumentos
-@AllArgsConstructor  // Anotação do Lombok para gerar um construtor com todos os campos como argumentos
-@Entity  // Anotação do JPA para marcar esta classe como uma entidade persistente
-@Table(name = "addresses")  // Anotação do JPA para especificar o nome da tabela no banco de dados
+@Data // Lombok annotation para gerar getters, setters, toString, equals, e hashCode automaticamente
+@NoArgsConstructor // Lombok annotation para gerar construtor padrão sem argumentos
+@AllArgsConstructor // Lombok annotation para gerar construtor com todos os argumentos
+@Entity // Indica que esta classe é uma entidade JPA
+@Table(name = "addresses") // Especifica o nome da tabela correspondente no banco de dados
 public class AddressModel {
 
-    @Id  // Anotação do JPA para marcar este campo como a chave primária
-    @GeneratedValue(strategy = GenerationType.IDENTITY)  // Anotação do JPA para indicar que o ID deve ser gerado automaticamente
-    private int id;
+    @Id // Indica que esta propriedade é a chave primária da entidade
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // Configura a estratégia de geração automática do valor da chave primária
+    private int id; // Identificador único do endereço
 
-    @Column(nullable = false)  // Anotação do JPA para especificar que esta coluna não pode ser nula
-    private String street;
+    @Column(nullable = false) // Especifica que este campo não pode ser nulo no banco de dados
+    private String street; // Nome da rua
 
-    @Column(nullable = false)  // Anotação do JPA para especificar que esta coluna não pode ser nula
-    private String number;
+    @Column(nullable = false)
+    private String number; // Número do endereço
 
-    @Column  // Anotação do JPA para especificar que esta coluna pode ser nula
-    private String complement;
+    @Column
+    private String complement; // Complemento do endereço
 
-    @Column(nullable = false)  // Anotação do JPA para especificar que esta coluna não pode ser nula
-    private String city;
+    @Column(nullable = false)
+    private String city; // Cidade
 
-    @Column(nullable = false)  // Anotação do JPA para especificar que esta coluna não pode ser nula
-    private String state;
+    @Column(nullable = false)
+    private String state; // Estado
 
-    @Column(nullable = false)  // Anotação do JPA para especificar que esta coluna não pode ser nula
-    private String cep;
+    @Column(nullable = false)
+    private String cep; // CEP (Código de Endereçamento Postal)
 
-    @ManyToOne  // Anotação do JPA para especificar um relacionamento muitos-para-um com a entidade ClientModel
-    @JoinColumn(name = "client_id", nullable = false)  // Anotação do JPA para especificar a coluna de junção que referencia a chave estrangeira da tabela de clientes e que não pode ser nula
-    private ClientModel client;
+    @JsonBackReference // Anotação Jackson para controlar a serialização (evitar loop infinito)
+    @ManyToOne(fetch = FetchType.LAZY) // Mapeamento muitos-para-um com a entidade ClientModel
+    @JoinColumn(name = "client_id", nullable = false) // Nome da coluna na tabela de endereços que faz referência ao cliente
+    private ClientModel client; // Cliente associado a este endereço
 }
