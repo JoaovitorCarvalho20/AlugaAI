@@ -1,5 +1,7 @@
 package com.projeto.AlugaAi.Models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.projeto.AlugaAi.Enum.ClientType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -8,52 +10,45 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-@Data  // Anotação do Lombok para gerar getters, setters, equals, hashCode e métodos toString
-@NoArgsConstructor  // Anotação do Lombok para gerar um construtor sem argumentos
-@AllArgsConstructor  // Anotação do Lombok para gerar um construtor com todos os campos como argumentos
-@Entity  // Anotação do JPA para marcar esta classe como uma entidade persistente
-@Table(name = "clients")  // Anotação do JPA para especificar o nome da tabela no banco de dados
+@Data // Lombok annotation para gerar getters, setters, toString, equals, e hashCode automaticamente
+@NoArgsConstructor // Lombok annotation para gerar construtor padrão sem argumentos
+@AllArgsConstructor // Lombok annotation para gerar construtor com todos os argumentos
+@Entity // Indica que esta classe é uma entidade JPA
+@Table(name = "clients") // Especifica o nome da tabela correspondente no banco de dados
 public class ClientModel {
 
-    @Id  // Anotação do JPA para marcar este campo como a chave primária
-    @GeneratedValue(strategy = GenerationType.IDENTITY)  // Anotação do JPA para indicar que o ID deve ser gerado automaticamente
-    private int id;
+    @Id // Indica que esta propriedade é a chave primária da entidade
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // Configura a estratégia de geração automática do valor da chave primária
+    private int id; // Identificador único do cliente
 
-    @Column(nullable = false)  // Anotação do JPA para especificar que esta coluna não pode ser nula
-    private String name;
+    @Column(nullable = false) // Especifica que este campo não pode ser nulo no banco de dados
+    private String name; // Nome do cliente
 
-    @Column(nullable = false)  // Anotação do JPA para especificar que esta coluna não pode ser nula
-    private String lastName;
+    @Column(nullable = false)
+    private String lastName; // Sobrenome do cliente
 
-    @Column(nullable = false)  // Anotação do JPA para especificar que esta coluna não pode ser nula
-    private String phone;
+    @Column(nullable = false)
+    private String phone; // Número de telefone do cliente
 
-    @Column(nullable = false, unique = true)  // Anotação do JPA para especificar que esta coluna não pode ser nula e deve ser única
-    private String cpf;
+    @Column(nullable = false, unique = true) // Especifica que este campo é único (não pode haver CPFs duplicados)
+    private String cpf; // CPF do cliente
 
-    @Column(nullable = false, unique = true)  // Anotação do JPA para especificar que esta coluna não pode ser nula e deve ser única
-    private String cnh;
+    @Column(nullable = false, unique = true)
+    private String cnh; // Número da CNH do cliente
 
-    @Column(name = "year_of_birth", nullable = false)  // Anotação do JPA para especificar o nome da coluna e que ela não pode ser nula
-    private int yearOfBirth;
+    @Column(name = "year_of_birth", nullable = false)
+    private int yearOfBirth; // Ano de nascimento do cliente
 
-    @Column(nullable = false, unique = true)  // Anotação do JPA para especificar que esta coluna não pode ser nula e deve ser única
-    private String email;
+    @Column(nullable = false, unique = true)
+    private String email; // Endereço de e-mail do cliente
 
-    @Column(nullable = false)  // Anotação do JPA para especificar que esta coluna não pode ser nula
-    private String password;
+    @Column(nullable = false)
+    private String password; // Senha do cliente
 
-    @Enumerated(EnumType.STRING)  // Anotação do JPA para especificar que este campo é um tipo enumerado e deve ser armazenado como uma string
-    @Column(name = "client_type", nullable = false)  // Anotação do JPA para especificar o nome da coluna e que ela não pode ser nula
-    private ClientType clientType;
+    @Enumerated(EnumType.STRING) // Especifica que este campo é um enum cujos valores são armazenados como strings no banco de dados
+    @Column(name = "client_type", nullable = false)
+    private ClientType clientType; // Tipo de cliente (enum ClientType)
 
-    @OneToMany(mappedBy = "client")  // Anotação do JPA para especificar um relacionamento um-para-muitos com a entidade AddressModel
-    private List<AddressModel> addresses;
-
-    // Descomente as linhas abaixo quando a classe RentalModel estiver implementada
-    // @OneToMany(mappedBy = "renter", cascade = CascadeType.ALL)
-    // private List<RentalModel> rentalsAsRenter;
-
-    // @OneToMany(mappedBy = "lessor", cascade = CascadeType.ALL)
-    // private List<RentalModel> rentalsAsLessor;
+    @OneToMany(mappedBy = "client", fetch = FetchType.EAGER) // Mapeamento um-para-muitos com a classe AddressModel, onde "client" é o nome da propriedade na classe AddressModel que mapeia o relacionamento
+    private List<AddressModel> addresses; // Lista de endereços associados a este cliente
 }

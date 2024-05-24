@@ -9,24 +9,24 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
 
-@RestController  // Anotação do Spring para marcar esta classe como um controller REST
-@RequestMapping("/api/addresses")  // Define a URL base para todos os endpoints deste controller
+@RestController
+@RequestMapping("/api/addresses")
 public class AddressController {
 
-    @Autowired  // Injeta uma instância do AddressService
+    @Autowired
     private AddressService addressService;
 
-    // Endpoint para listar todos os endereços
+    // Endpoint para obter todos os endereços
     @GetMapping
     public List<AddressModel> getAllAddresses() {
         return addressService.getAllAddresses();
     }
 
-    // Endpoint para buscar um endereço por ID
+    // Endpoint para obter um endereço pelo ID
     @GetMapping("/{id}")
     public ResponseEntity<AddressModel> getAddressById(@PathVariable Long id) {
         Optional<AddressModel> address = addressService.getAddressById(id);
-        return address.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+        return address.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build()); // Retorna o endereço se encontrado, ou 404 Not Found se não encontrado
     }
 
     // Endpoint para criar um novo endereço
@@ -35,20 +35,20 @@ public class AddressController {
         return addressService.createAddress(address);
     }
 
-    // Endpoint para atualizar um endereço existente
+    // Endpoint para atualizar um endereço pelo ID
     @PutMapping("/{id}")
     public ResponseEntity<AddressModel> updateAddress(@PathVariable Long id, @RequestBody AddressModel updatedAddress) {
         Optional<AddressModel> address = addressService.updateAddress(id, updatedAddress);
-        return address.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+        return address.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build()); // Retorna o endereço atualizado se encontrado, ou 404 Not Found se não encontrado
     }
 
-    // Endpoint para deletar um endereço por ID
+    // Endpoint para deletar um endereço pelo ID
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteAddress(@PathVariable Long id) {
         if (addressService.deleteAddress(id)) {
-            return ResponseEntity.noContent().build();
+            return ResponseEntity.noContent().build(); // Retorna status 204 No Content se o endereço foi deletado com sucesso
         } else {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.notFound().build(); // Retorna 404 Not Found se o endereço não foi encontrado
         }
     }
 }
