@@ -1,6 +1,8 @@
 package com.projeto.AlugaAi.Models; // Define o pacote onde esta classe está localizada
 
 import jakarta.persistence.*; // Importa as anotações e classes necessárias para JPA (Java Persistence API)
+
+import java.util.HashSet;
 import java.util.Set;
 import java.util.List; // Importa a classe List para manipular listas
 
@@ -30,12 +32,14 @@ public class Car {
     private Integer numberOfPorts; // Número de portas do carro
     private Boolean available; // Indica se o carro está disponível para aluguel
 
-    @ElementCollection
-    private Set<String> imagens; // Armazena os nomes dos arquivos de imagem
+
 
     @ManyToOne // Define um relacionamento Many-to-One (muitos para um) com CarModel
     @JoinColumn(name = "model_id") // Define a coluna de junção no banco de dados que referencia a chave primária da tabela CarModel
     private CarModel carModel; // Referência ao modelo do carro
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    private Set<String> imagens = new HashSet<>();
 
     // Comentado para evitar mapeamento no momento
     // @OneToMany(mappedBy = "car") // Define um relacionamento One-to-Many (um para muitos) com Rental

@@ -1,4 +1,4 @@
-package com.projeto.AlugaAi.Exptions;
+package com.projeto.AlugaAi.Exeptions;
 
 public class MyEntityNotFoundException extends RuntimeException {
 
