@@ -6,4 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 // Interface que estende JpaRepository para operações de CRUD com AddressModel
 public interface AddressRepository extends JpaRepository<AddressModel, Long> {
 
+    // Método para deletar endereços por client_id
+    void deleteByClientId(Long clientId);
 }
