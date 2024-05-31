@@ -38,8 +38,11 @@ public class Car {
     @JoinColumn(name = "model_id")
     private CarModel carModel;
 
+    @ManyToOne
+    @JoinColumn(name = "client_id") // Nome da coluna que representa a chave estrangeira na tabela de Car
+    private ClientModel client; // Adiciona o relacionamento com o cliente
+
     @OneToMany(mappedBy = "car", fetch = FetchType.EAGER)
     @JsonIgnore // Evita a serialização recursiva
     private List<RentalModel> rentals;
-
 }

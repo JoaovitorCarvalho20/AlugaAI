@@ -1,6 +1,7 @@
 package com.projeto.AlugaAi.Controller;
 
 import com.projeto.AlugaAi.Models.Car;
+import com.projeto.AlugaAi.Models.ClientModel;
 import com.projeto.AlugaAi.Services.CarService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -56,7 +57,12 @@ public class CarController {
     // Endpoint para adicionar um novo carro com imagens
     @PostMapping("/add-with-images")
     public Car addCarWithImages(@ModelAttribute Car car,
-                                @RequestParam("files") MultipartFile[] files) {
-        return carService.saveCar(car, files); // Salva o novo carro com as imagens fornecidas
+                                @RequestParam("files") MultipartFile[] files,
+                                @RequestParam("clientId") Long clientId) {
+        // Aqui você pode buscar o cliente no banco de dados com base no ID
+        ClientModel client = new ClientModel();
+        client.setId(clientId);
+        // Em seguida, chame o método saveCar com o cliente
+        return carService.saveCar(car, files, client);
     }
 }
