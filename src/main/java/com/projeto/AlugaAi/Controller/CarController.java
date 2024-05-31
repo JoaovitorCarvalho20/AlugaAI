@@ -24,7 +24,7 @@ public class CarController {
 
     // Endpoint para adicionar um novo carro com imagens
     @PostMapping("/add-with-images")
-    public ResponseEntity<?> addCarWithImages(@RequestBody Car car, @RequestParam("files") MultipartFile[] files) {
+    public ResponseEntity<?> addCarWithImages(@RequestPart("car") Car car, @RequestParam("files") MultipartFile[] files) {
         try {
             Car savedCar = carService.saveCar(car, files);
             return ResponseEntity.ok(savedCar);
