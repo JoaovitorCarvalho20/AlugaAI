@@ -1,6 +1,7 @@
 package com.projeto.AlugaAi.Models;
 
 // Importações necessárias
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -25,6 +26,7 @@ public class RentalModel {
 
     @ManyToOne
     @JoinColumn(name = "client_id")
+    @JsonIgnore // Evita a serialização recursiva
     private ClientModel client;
 
 
